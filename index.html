@@ -1,0 +1,38 @@
+<!doctype html>
+        <title>1</title>
+        <h1>click to upload</h1>
+        <video id="video" width="640" height="480" autoplay></video>
+        <button id="snap">shot</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <script>
+            // 获取视频流并显示
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    document.getElementById('video').srcObject = stream;
+                });
+
+            document.getElementById('snap').onclick = function() {
+                var canvas = document.getElementById('canvas');
+                var video = document.getElementById('video');
+                var context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob(function(blob) {
+                    var formData = new FormData();
+                    formData.append('file', blob, 'photo.png');
+
+                    fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => {
+                        if (response.ok) {
+                            alert('Please wait for the result');
+                        } else {
+                            alert('Upload failed. Try again later.');
+                        }
+                    });
+                }, 'image/jpeg');
+            };
+        </script>
